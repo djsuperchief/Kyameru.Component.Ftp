@@ -9,7 +9,7 @@ namespace Kyameru.Component.Ftp
     {
         public IFromComponent CreateFromComponent(Dictionary<string, string> headers)
         {
-            throw new NotImplementedException();
+            return new From(headers);
         }
 
         public IToComponent CreateToComponent(Dictionary<string, string> headers)
