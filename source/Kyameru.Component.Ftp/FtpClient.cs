@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kyameru.Core.Entities;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -40,6 +41,8 @@ namespace Kyameru.Component.Ftp
 
         public event EventHandler<Exception> OnError;
 
+        public event EventHandler<Kyameru.Core.Entities.Routable> OnDownloadFile;
+
         internal void Poll(object state)
         {
             List<string> files = this.GetDirectoryContents();
@@ -56,7 +59,8 @@ namespace Kyameru.Component.Ftp
             {
                 for (int i = 0; i < files.Count; i++)
                 {
-                    FtpWebRequest ftp = this.GetFtpRequest($"{this.settings.Path}/{files[i]}", ftpOperation.Delete, false);
+                    bool closeConnection = i == files.Count - 1;
+                    FtpWebRequest ftp = this.GetFtpRequest($"{this.settings.Path}/{files[i]}", ftpOperation.Delete, closeConnection);
                     try
                     {
                         using (FtpWebResponse response = (FtpWebResponse)ftp.GetResponse())
@@ -93,6 +97,7 @@ namespace Kyameru.Component.Ftp
                         }
 
                         ftpClient.DownloadFile(path, transfer);
+                        this.CreateAndRoute(transfer);
                     }
                     catch (Exception ex)
                     {
@@ -100,6 +105,22 @@ namespace Kyameru.Component.Ftp
                     }
                 }
             }
+        }
+
+        private void CreateAndRoute(string sourceFile)
+        {
+            FileInfo info = new FileInfo(sourceFile);
+            sourceFile = sourceFile.Replace("\\", "/");
+            Dictionary<string, string> headers = new Dictionary<string, string>();
+            headers.Add("SourceDirectory", System.IO.Path.GetDirectoryName(sourceFile));
+            headers.Add("SourceFile", System.IO.Path.GetFileName(sourceFile));
+            headers.Add("FullSource", sourceFile);
+            headers.Add("DateCreated", info.CreationTimeUtc.ToLongDateString());
+            headers.Add("Readonly", info.IsReadOnly.ToString());
+            headers.Add("DataType", "byte");
+            headers.Add("FtpSource", this.ConstructFtpUri(this.settings.Path, System.IO.Path.GetFileName(sourceFile)));
+            Routable dataItem = new Routable(headers, System.IO.File.ReadAllBytes(sourceFile));
+            this.RaiseOnDownload(dataItem);
         }
 
         private List<string> GetDirectoryContents()
@@ -145,6 +166,22 @@ namespace Kyameru.Component.Ftp
             return response;
         }
 
+        private string ConstructFtpUri(string path, string file)
+        {
+            StringBuilder response = new StringBuilder($"ftp://{this.settings.Host}:{this.settings.Port}/");
+            if (!path.IsNullOrEmptyPath())
+            {
+                response.Append($"{path}/");
+            }
+
+            if (!string.IsNullOrWhiteSpace(file))
+            {
+                response.Append($"{file}");
+            }
+
+            return response.ToString();
+        }
+
         private void RaiseLog(string message)
         {
             this.OnLog?.Invoke(this, message);
@@ -153,6 +190,11 @@ namespace Kyameru.Component.Ftp
         private void RaiseError(Exception ex)
         {
             this.OnError?.Invoke(this, ex);
+        }
+
+        private void RaiseOnDownload(Routable routable)
+        {
+            this.OnDownloadFile?.Invoke(this, routable);
         }
     }
 }

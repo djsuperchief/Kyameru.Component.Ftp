@@ -47,6 +47,24 @@ namespace Kyameru.Component.Ftp
         {
             this.ftp = new FtpClient(this.ftpSettings);
             this.poller = new Timer(this.ftp.Poll, this.autoEvent, 1000, this.ftpSettings.PollTime);
+            this.ftp.OnDownloadFile += this.Ftp_OnDownloadFile;
+            this.ftp.OnLog += this.Ftp_OnLog;
+            this.ftp.OnError += this.Ftp_OnError;
+        }
+
+        private void Ftp_OnError(object sender, Exception e)
+        {
+            this.OnLog?.Invoke(this, new Log(Microsoft.Extensions.Logging.LogLevel.Error, Resources.ERROR_FTPPROCESSING, e));
+        }
+
+        private void Ftp_OnLog(object sender, string e)
+        {
+            this.OnLog?.Invoke(this, new Log(Microsoft.Extensions.Logging.LogLevel.Information, e));
+        }
+
+        private void Ftp_OnDownloadFile(object sender, Routable e)
+        {
+            this.OnAction?.Invoke(this, e);
         }
 
         /// <summary>
