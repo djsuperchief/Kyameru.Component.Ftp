@@ -14,7 +14,7 @@ namespace Kyameru.Component.Ftp
 
         public IToComponent CreateToComponent(Dictionary<string, string> headers)
         {
-            throw new NotImplementedException();
+            return new To(headers);
         }
     }
 }

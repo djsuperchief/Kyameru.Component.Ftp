@@ -53,6 +53,29 @@ namespace Kyameru.Component.Ftp
             }
         }
 
+        internal void UploadFile(string fileSource)
+        {
+            this.UploadFile(System.IO.File.ReadAllBytes(fileSource), System.IO.Path.GetFileName(fileSource));
+        }
+
+        internal void UploadFile(byte[] file, string name)
+        {
+            FtpWebRequest ftp = this.GetFtpRequest($"{this.settings.Path}/{name}", ftpOperation.Upload, true);
+            try
+            {
+                this.RaiseLog(string.Format(Resources.INFO_UPLOADING, name));
+                ftp.ContentLength = file.Length;
+                using (Stream ftpStream = ftp.GetRequestStream())
+                {
+                    ftpStream.Write(file, 0, file.Length);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.RaiseError(ex);
+            }
+        }
+
         private void DeleteFiles(List<string> files)
         {
             if (this.settings.Delete)
@@ -152,12 +175,12 @@ namespace Kyameru.Component.Ftp
             return response;
         }
 
-        private FtpWebRequest GetFtpRequest(string path, ftpOperation method, bool keepOpen = true)
+        private FtpWebRequest GetFtpRequest(string path, ftpOperation method, bool closeConnection = false)
         {
             FtpWebRequest response = (FtpWebRequest)WebRequest.Create($"ftp://{this.settings.Host}:{this.settings.Port}/{path}");
             response.Method = this.ftpClientOperation[method];
             response.UseBinary = true;
-            response.KeepAlive = keepOpen;
+            response.KeepAlive = !closeConnection;
             if (this.settings.Credentials != null)
             {
                 response.Credentials = this.settings.Credentials;
