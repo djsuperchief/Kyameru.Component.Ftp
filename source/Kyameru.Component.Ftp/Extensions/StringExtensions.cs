@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kyameru.Component.Ftp
+namespace Kyameru.Component.Ftp.Extensions
 {
     internal static class StringExtensions
     {

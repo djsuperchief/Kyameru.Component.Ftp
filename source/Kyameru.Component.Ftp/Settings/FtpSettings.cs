@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
-namespace Kyameru.Component.Ftp
+namespace Kyameru.Component.Ftp.Settings
 {
     /// <summary>
     /// Ftp settings entity

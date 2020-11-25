@@ -1,4 +1,8 @@
-﻿using Kyameru.Core.Entities;
+﻿using Kyameru.Component.Ftp.Contracts;
+using Kyameru.Component.Ftp.Enums;
+using Kyameru.Component.Ftp.Extensions;
+using Kyameru.Component.Ftp.Settings;
+using Kyameru.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,23 +17,14 @@ namespace Kyameru.Component.Ftp
     internal class FtpClient
     {
         private readonly FtpSettings settings;
-
         private const string TMPDIR = "ftp_temp";
 
-        private enum ftpOperation
+        private readonly Dictionary<FtpOperation, string> ftpClientOperation = new Dictionary<FtpOperation, string>()
         {
-            List,
-            Delete,
-            Download,
-            Upload
-        }
-
-        private readonly Dictionary<ftpOperation, string> ftpClientOperation = new Dictionary<ftpOperation, string>()
-        {
-            { ftpOperation.List, WebRequestMethods.Ftp.ListDirectory},
-            { ftpOperation.Delete, WebRequestMethods.Ftp.DeleteFile },
-            { ftpOperation.Download, WebRequestMethods.Ftp.DownloadFile },
-            { ftpOperation.Upload, WebRequestMethods.Ftp.UploadFile }
+            { FtpOperation.List, WebRequestMethods.Ftp.ListDirectory},
+            { FtpOperation.Delete, WebRequestMethods.Ftp.DeleteFile },
+            { FtpOperation.Download, WebRequestMethods.Ftp.DownloadFile },
+            { FtpOperation.Upload, WebRequestMethods.Ftp.UploadFile }
         };
 
         public FtpClient(FtpSettings ftpSettings)
@@ -60,7 +55,7 @@ namespace Kyameru.Component.Ftp
 
         internal void UploadFile(byte[] file, string name)
         {
-            FtpWebRequest ftp = this.GetFtpRequest($"{this.settings.Path}/{name}", ftpOperation.Upload, true);
+            FtpWebRequest ftp = this.GetFtpRequest($"{this.settings.Path}/{name}", FtpOperation.Upload, true);
             try
             {
                 this.RaiseLog(string.Format(Resources.INFO_UPLOADING, name));
@@ -83,7 +78,7 @@ namespace Kyameru.Component.Ftp
                 for (int i = 0; i < files.Count; i++)
                 {
                     bool closeConnection = i == files.Count - 1;
-                    FtpWebRequest ftp = this.GetFtpRequest($"{this.settings.Path}/{files[i]}", ftpOperation.Delete, closeConnection);
+                    FtpWebRequest ftp = this.GetFtpRequest($"{this.settings.Path}/{files[i]}", FtpOperation.Delete, closeConnection);
                     try
                     {
                         using (FtpWebResponse response = (FtpWebResponse)ftp.GetResponse())
@@ -149,7 +144,7 @@ namespace Kyameru.Component.Ftp
         private List<string> GetDirectoryContents()
         {
             List<string> response = new List<string>();
-            FtpWebRequest ftp = this.GetFtpRequest(this.settings.Path, ftpOperation.List);
+            FtpWebRequest ftp = this.GetFtpRequest(this.settings.Path, FtpOperation.List);
             try
             {
                 using (FtpWebResponse ftpResponse = (FtpWebResponse)ftp.GetResponse())
@@ -175,15 +170,16 @@ namespace Kyameru.Component.Ftp
             return response;
         }
 
-        private FtpWebRequest GetFtpRequest(string path, ftpOperation method, bool closeConnection = false)
+        private FtpWebRequest GetFtpRequest(string path, FtpOperation method, bool closeConnection = false)
         {
-            FtpWebRequest response = (FtpWebRequest)WebRequest.Create($"ftp://{this.settings.Host}:{this.settings.Port}/{path}");
+            //return this.webRequestFactory.GetFtpWebRequest(path, method, this.settings, closeConnection);
+            FtpWebRequest response = (FtpWebRequest)WebRequest.Create($"ftp://{settings.Host}:{settings.Port}/{path}");
             response.Method = this.ftpClientOperation[method];
             response.UseBinary = true;
             response.KeepAlive = !closeConnection;
-            if (this.settings.Credentials != null)
+            if (settings.Credentials != null)
             {
-                response.Credentials = this.settings.Credentials;
+                response.Credentials = settings.Credentials;
             }
 
             return response;

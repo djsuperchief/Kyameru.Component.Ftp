@@ -1,4 +1,6 @@
-﻿using Kyameru.Core.Contracts;
+﻿using Kyameru.Component.Ftp.Contracts;
+using Kyameru.Component.Ftp.Settings;
+using Kyameru.Core.Contracts;
 using Kyameru.Core.Entities;
 using System;
 using System.Collections.Generic;
@@ -13,7 +15,7 @@ namespace Kyameru.Component.Ftp
     /// </summary>
     public class From : IFromComponent
     {
-        private FtpSettings ftpSettings;
+        private readonly FtpSettings ftpSettings;
 
         private FtpClient ftp;
 

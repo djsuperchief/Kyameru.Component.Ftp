@@ -1,4 +1,6 @@
-﻿using Kyameru.Core.Contracts;
+﻿using Kyameru.Component.Ftp.Contracts;
+using Kyameru.Component.Ftp.Settings;
+using Kyameru.Core.Contracts;
 using Kyameru.Core.Entities;
 using Microsoft.Extensions.Logging;
 using System;
