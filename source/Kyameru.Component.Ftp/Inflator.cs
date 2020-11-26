@@ -7,12 +7,12 @@ namespace Kyameru.Component.Ftp
     {
         public IFromComponent CreateFromComponent(Dictionary<string, string> headers)
         {
-            return new From(headers);
+            return new From(headers, new Components.WebRequestUtility());
         }
 
         public IToComponent CreateToComponent(Dictionary<string, string> headers)
         {
-            return new To(headers);
+            return new To(headers, new Components.WebRequestUtility());
         }
     }
 }

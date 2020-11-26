@@ -17,4 +17,8 @@
     <ProjectReference Include="..\..\..\source\Kyameru.Component.Ftp\Kyameru.Component.Ftp.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Generic\" />
+  </ItemGroup>
+
 </Project>

@@ -8,7 +8,7 @@ namespace Kyameru.Component.Ftp.Settings
     /// <summary>
     /// Ftp settings entity
     /// </summary>
-    internal class FtpSettings
+    public class FtpSettings
     {
         public string Host { get; private set; }
 

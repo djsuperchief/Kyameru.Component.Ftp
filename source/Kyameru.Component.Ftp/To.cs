@@ -16,13 +16,13 @@ namespace Kyameru.Component.Ftp
         private readonly string archivePath;
         private readonly string source;
 
-        public To(Dictionary<string, string> headers)
+        public To(Dictionary<string, string> headers, IWebRequestUtility webRequestUtility)
         {
             Dictionary<string, string> config = headers.ToToConfig();
             this.archivePath = config.GetKeyValue("Archive");
             this.archivePath = config.GetKeyValue("Source");
             this.ftpSettings = new FtpSettings(config);
-            this.ftpClient = new FtpClient(this.ftpSettings);
+            this.ftpClient = new FtpClient(this.ftpSettings, webRequestUtility);
         }
 
         /// <summary>

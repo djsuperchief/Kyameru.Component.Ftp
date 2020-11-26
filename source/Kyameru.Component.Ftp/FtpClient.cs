@@ -17,19 +17,13 @@ namespace Kyameru.Component.Ftp
     internal class FtpClient
     {
         private readonly FtpSettings settings;
+        private readonly IWebRequestUtility webRequestUtility;
         private const string TMPDIR = "ftp_temp";
 
-        private readonly Dictionary<FtpOperation, string> ftpClientOperation = new Dictionary<FtpOperation, string>()
-        {
-            { FtpOperation.List, WebRequestMethods.Ftp.ListDirectory},
-            { FtpOperation.Delete, WebRequestMethods.Ftp.DeleteFile },
-            { FtpOperation.Download, WebRequestMethods.Ftp.DownloadFile },
-            { FtpOperation.Upload, WebRequestMethods.Ftp.UploadFile }
-        };
-
-        public FtpClient(FtpSettings ftpSettings)
+        public FtpClient(FtpSettings ftpSettings, IWebRequestUtility webRequestUtility)
         {
             this.settings = ftpSettings;
+            this.webRequestUtility = webRequestUtility;
         }
 
         public event EventHandler<string> OnLog;
@@ -38,7 +32,7 @@ namespace Kyameru.Component.Ftp
 
         public event EventHandler<Kyameru.Core.Entities.Routable> OnDownloadFile;
 
-        internal void Poll(object state)
+        internal void Poll()
         {
             List<string> files = this.GetDirectoryContents();
             if (files.Count > 0)
@@ -55,15 +49,10 @@ namespace Kyameru.Component.Ftp
 
         internal void UploadFile(byte[] file, string name)
         {
-            FtpWebRequest ftp = this.GetFtpRequest($"{this.settings.Path}/{name}", FtpOperation.Upload, true);
             try
             {
                 this.RaiseLog(string.Format(Resources.INFO_UPLOADING, name));
-                ftp.ContentLength = file.Length;
-                using (Stream ftpStream = ftp.GetRequestStream())
-                {
-                    ftpStream.Write(file, 0, file.Length);
-                }
+                this.webRequestUtility.UploadFile(file, this.settings, name);
             }
             catch (Exception ex)
             {
@@ -78,13 +67,10 @@ namespace Kyameru.Component.Ftp
                 for (int i = 0; i < files.Count; i++)
                 {
                     bool closeConnection = i == files.Count - 1;
-                    FtpWebRequest ftp = this.GetFtpRequest($"{this.settings.Path}/{files[i]}", FtpOperation.Delete, closeConnection);
                     try
                     {
-                        using (FtpWebResponse response = (FtpWebResponse)ftp.GetResponse())
-                        {
-                            this.RaiseLog(string.Format(Resources.INFO_DELETINGFILE, files[i]));
-                        }
+                        this.RaiseLog(string.Format(Resources.INFO_DELETINGFILE, files[i]));
+                        this.webRequestUtility.DeleteFile(settings, files[i], closeConnection);
                     }
                     catch (Exception ex)
                     {
@@ -96,36 +82,26 @@ namespace Kyameru.Component.Ftp
 
         private void DownloadFiles(List<string> files)
         {
-            using (WebClient ftpClient = new WebClient())
+            for (int i = 0; i < files.Count; i++)
             {
-                if (this.settings.Credentials != null)
+                try
                 {
-                    ftpClient.Credentials = this.settings.Credentials;
+                    string transfer = $"{TMPDIR}/{files[i]}";
+                    if (!Directory.Exists(TMPDIR))
+                    {
+                        Directory.CreateDirectory(TMPDIR);
+                    }
+                    byte[] file = this.webRequestUtility.DownloadFile(files[i], this.settings);
+                    this.CreateAndRoute(transfer, file);
                 }
-
-                for (int i = 0; i < files.Count; i++)
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        string path = $"ftp://{this.settings.Host}:{this.settings.Port}/{this.settings.Path}/{files[i]}";
-                        string transfer = $"{TMPDIR}/{files[i]}";
-                        if (!Directory.Exists(TMPDIR))
-                        {
-                            Directory.CreateDirectory(TMPDIR);
-                        }
-
-                        ftpClient.DownloadFile(path, transfer);
-                        this.CreateAndRoute(transfer);
-                    }
-                    catch (Exception ex)
-                    {
-                        this.RaiseError(ex);
-                    }
+                    this.RaiseError(ex);
                 }
             }
         }
 
-        private void CreateAndRoute(string sourceFile)
+        private void CreateAndRoute(string sourceFile, byte[] file)
         {
             FileInfo info = new FileInfo(sourceFile);
             sourceFile = sourceFile.Replace("\\", "/");
@@ -137,49 +113,20 @@ namespace Kyameru.Component.Ftp
             headers.Add("Readonly", info.IsReadOnly.ToString());
             headers.Add("DataType", "byte");
             headers.Add("FtpSource", this.ConstructFtpUri(this.settings.Path, System.IO.Path.GetFileName(sourceFile)));
-            Routable dataItem = new Routable(headers, System.IO.File.ReadAllBytes(sourceFile));
+            Routable dataItem = new Routable(headers, file);
             this.RaiseOnDownload(dataItem);
         }
 
         private List<string> GetDirectoryContents()
         {
-            List<string> response = new List<string>();
-            FtpWebRequest ftp = this.GetFtpRequest(this.settings.Path, FtpOperation.List);
+            List<string> response = null;
             try
             {
-                using (FtpWebResponse ftpResponse = (FtpWebResponse)ftp.GetResponse())
-                using (Stream responseStream = ftpResponse.GetResponseStream())
-                {
-                    this.RaiseLog(Resources.INFO_GETTINGDIRECTORY);
-                    StreamReader reader = new StreamReader(responseStream);
-                    while (!reader.EndOfStream)
-                    {
-                        string file = reader.ReadLine();
-                        if (!string.IsNullOrWhiteSpace(Path.GetExtension(file)))
-                        {
-                            response.Add(file);
-                        }
-                    }
-                }
+                response = this.webRequestUtility.GetDirectoryContents(this.settings);
             }
             catch (Exception ex)
             {
                 this.RaiseError(ex);
-            }
-
-            return response;
-        }
-
-        private FtpWebRequest GetFtpRequest(string path, FtpOperation method, bool closeConnection = false)
-        {
-            //return this.webRequestFactory.GetFtpWebRequest(path, method, this.settings, closeConnection);
-            FtpWebRequest response = (FtpWebRequest)WebRequest.Create($"ftp://{settings.Host}:{settings.Port}/{path}");
-            response.Method = this.ftpClientOperation[method];
-            response.UseBinary = true;
-            response.KeepAlive = !closeConnection;
-            if (settings.Credentials != null)
-            {
-                response.Credentials = settings.Credentials;
             }
 
             return response;

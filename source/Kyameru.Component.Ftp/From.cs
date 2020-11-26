@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
-using System.Threading;
+using System.Timers;
 
 namespace Kyameru.Component.Ftp
 {
@@ -16,20 +16,19 @@ namespace Kyameru.Component.Ftp
     public class From : IFromComponent
     {
         private readonly FtpSettings ftpSettings;
-
+        private readonly IWebRequestUtility webRequestUtility;
         private FtpClient ftp;
 
         private Timer poller;
-
-        private readonly AutoResetEvent autoEvent = new AutoResetEvent(false);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="From"/> class.
         /// </summary>
         /// <param name="headers"></param>
-        public From(Dictionary<string, string> headers)
+        public From(Dictionary<string, string> headers, IWebRequestUtility webRequestUtility)
         {
             this.ftpSettings = new FtpSettings(headers.ToFromConfig());
+            this.webRequestUtility = webRequestUtility;
         }
 
         /// <summary>
@@ -47,11 +46,18 @@ namespace Kyameru.Component.Ftp
         /// </summary>
         public void Setup()
         {
-            this.ftp = new FtpClient(this.ftpSettings);
-            this.poller = new Timer(this.ftp.Poll, this.autoEvent, 1000, this.ftpSettings.PollTime);
+            this.ftp = new FtpClient(this.ftpSettings, this.webRequestUtility);
+            this.poller = new Timer(this.ftpSettings.PollTime);
+            this.poller.Elapsed += this.Poller_Elapsed;
+            this.poller.AutoReset = true;
             this.ftp.OnDownloadFile += this.Ftp_OnDownloadFile;
             this.ftp.OnLog += this.Ftp_OnLog;
             this.ftp.OnError += this.Ftp_OnError;
+        }
+
+        private void Poller_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            this.ftp.Poll();
         }
 
         private void Ftp_OnError(object sender, Exception e)
@@ -74,7 +80,8 @@ namespace Kyameru.Component.Ftp
         /// </summary>
         public void Start()
         {
-            this.autoEvent.WaitOne();
+            //this.ftp.Poll();
+            this.poller.Start();
         }
 
         /// <summary>
@@ -82,7 +89,7 @@ namespace Kyameru.Component.Ftp
         /// </summary>
         public void Stop()
         {
-            throw new NotImplementedException();
+            this.poller.Stop();
         }
     }
 }
