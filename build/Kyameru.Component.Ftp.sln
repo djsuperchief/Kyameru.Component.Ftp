@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0688086E-6DC
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3AAD4542-3654-44B1-927F-2256F625D77D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kyameru.Component.Ftp", "..\source\Kyameru.Component.Ftp\Kyameru.Component.Ftp.csproj", "{74340C46-8FEB-4636-A0EC-D2451DBD971E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kyameru.Component.Ftp", "..\source\Kyameru.Component.Ftp.csproj", "{74340C46-8FEB-4636-A0EC-D2451DBD971E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kyameru.Component.Ftp.Tests", "..\tests\UnitTests\Kyameru.Component.Ftp.Tests\Kyameru.Component.Ftp.Tests.csproj", "{A488605B-2504-431C-9FFA-B1FCC21723C0}"
 EndProject

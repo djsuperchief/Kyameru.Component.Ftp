@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\source\Kyameru.Component.Ftp\Kyameru.Component.Ftp.csproj" />
+    <ProjectReference Include="..\..\..\source\Kyameru.Component.Ftp.csproj" />
   </ItemGroup>
 
   <ItemGroup>
