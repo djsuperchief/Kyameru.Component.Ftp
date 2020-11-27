@@ -5,6 +5,7 @@ using Kyameru.Core.Entities;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Kyameru.Component.Ftp
@@ -20,7 +21,7 @@ namespace Kyameru.Component.Ftp
         {
             Dictionary<string, string> config = headers.ToToConfig();
             this.archivePath = config.GetKeyValue("Archive");
-            this.archivePath = config.GetKeyValue("Source");
+            this.source = config.GetKeyValue("Source");
             this.ftpSettings = new FtpSettings(config);
             this.ftpClient = new FtpClient(this.ftpSettings, webRequestUtility);
         }
@@ -39,11 +40,48 @@ namespace Kyameru.Component.Ftp
             try
             {
                 this.ftpClient.UploadFile(this.GetSource(item), item.Headers.GetKeyValue("SourceFile"));
+                this.ArchiveFile(item);
             }
             catch (Exception ex)
             {
                 item.SetInError(this.GetError("Upload", string.Format(Resources.ERROR_UPLOADING, item.Headers.GetKeyValue("FileName"))));
                 this.RaiseLog(string.Format(Resources.ERROR_UPLOADING, item.Headers.GetKeyValue("FileName")), LogLevel.Error, ex);
+            }
+        }
+
+        private void ArchiveFile(Routable item)
+        {
+            if ((this.source == "File" || string.IsNullOrWhiteSpace(this.source)) && !string.IsNullOrWhiteSpace(this.archivePath))
+            {
+                string fileName = item.Headers["SourceFile"];
+                string currentDirectory = System.IO.Directory.GetParent(item.Headers["FullSource"]).FullName;
+                string archiveDir = this.GetPath(currentDirectory);
+                this.EnsureDirectoryExists(archiveDir);
+                System.IO.File.Move(item.Headers["FullSource"], Path.Combine(archiveDir, fileName));
+            }
+        }
+
+        private string GetPath(string originalPath)
+        {
+            string response = string.Empty;
+            if (this.archivePath.Contains(".."))
+            {
+                response = new Uri(System.IO.Path.Combine(originalPath, this.archivePath)).LocalPath;
+            }
+            else
+            {
+                response = this.archivePath;
+            }
+
+            return response;
+        }
+
+        private void EnsureDirectoryExists(string path)
+        {
+            DirectoryInfo directoryInfo = new DirectoryInfo(System.IO.Directory.GetParent(path).FullName);
+            if (!directoryInfo.Exists)
+            {
+                directoryInfo.Create();
             }
         }
 
