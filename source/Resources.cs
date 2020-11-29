@@ -4,6 +4,12 @@ using System.Text;
 
 namespace Kyameru.Component.Ftp
 {
+    /// <summary>
+    /// Static resources (no magic strings please).
+    /// </summary>
+    /// <remarks>
+    /// Just for note, I have probably forgotten about some...will add later.
+    /// </remarks>
     internal static class Resources
     {
         public const string INFO_GETTINGDIRECTORY = "Getting directory contents...";

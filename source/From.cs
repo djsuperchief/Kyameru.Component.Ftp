@@ -55,21 +55,41 @@ namespace Kyameru.Component.Ftp
             this.ftp.OnError += this.Ftp_OnError;
         }
 
+        /// <summary>
+        /// Event triggered when timer elapses.
+        /// </summary>
+        /// <param name="sender">Object sending the event.</param>
+        /// <param name="e">Elapsed arguments.</param>
         private void Poller_Elapsed(object sender, ElapsedEventArgs e)
         {
             this.ftp.Poll();
         }
 
+        /// <summary>
+        /// Logs an error event.
+        /// </summary>
+        /// <param name="sender">Object sending the event.</param>
+        /// <param name="e">Exception being raised.</param>
         private void Ftp_OnError(object sender, Exception e)
         {
             this.OnLog?.Invoke(this, new Log(Microsoft.Extensions.Logging.LogLevel.Error, Resources.ERROR_FTPPROCESSING, e));
         }
 
+        /// <summary>
+        /// Event raised when logging.
+        /// </summary>
+        /// <param name="sender">Object sending</param>
+        /// <param name="e">Event message.</param>
         private void Ftp_OnLog(object sender, string e)
         {
             this.OnLog?.Invoke(this, new Log(Microsoft.Extensions.Logging.LogLevel.Information, e));
         }
 
+        /// <summary>
+        /// Event raised when file is downloaded.
+        /// </summary>
+        /// <param name="sender">Object sending the event.</param>
+        /// <param name="e">Message to route.</param>
         private void Ftp_OnDownloadFile(object sender, Routable e)
         {
             this.OnAction?.Invoke(this, e);

@@ -37,6 +37,11 @@ namespace Kyameru.Component.Ftp.Settings
             return response;
         }
 
+        /// <summary>
+        /// Converts incoming headers to valid processing headers.
+        /// </summary>
+        /// <param name="incoming">Incoming dictionary.</param>
+        /// <returns>Returns a dictionary of valid headers.</returns>
         public static Dictionary<string, string> ToToConfig(this Dictionary<string, string> incoming)
         {
             Dictionary<string, string> response = new Dictionary<string, string>();
@@ -53,6 +58,10 @@ namespace Kyameru.Component.Ftp.Settings
             return response;
         }
 
+        /// <summary>
+        /// Ensures required headers are populated.
+        /// </summary>
+        /// <param name="response"></param>
         private static void CheckDefaultHeaders(Dictionary<string, string> response)
         {
             response.SetDefault("PollTime", "60000");
@@ -62,6 +71,12 @@ namespace Kyameru.Component.Ftp.Settings
             response.SetDefault("Port", "21");
         }
 
+        /// <summary>
+        /// Gets a key value from a dictionary.
+        /// </summary>
+        /// <param name="incoming">Incoming dictionary.</param>
+        /// <param name="key">Key to find.</param>
+        /// <returns>Returns an empty string if key not found.</returns>
         public static string GetKeyValue(this Dictionary<string, string> incoming, string key)
         {
             string response = string.Empty;
@@ -73,6 +88,12 @@ namespace Kyameru.Component.Ftp.Settings
             return response;
         }
 
+        /// <summary>
+        /// Sets a default value if it doesn't exist.
+        /// </summary>
+        /// <param name="incoming">Incoming dictionary.</param>
+        /// <param name="key">Target key.</param>
+        /// <param name="value">Required value.</param>
         public static void SetDefault(this Dictionary<string, string> incoming, string key, string value)
         {
             if (!incoming.ContainsKey(key))

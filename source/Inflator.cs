@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace Kyameru.Component.Ftp
 {
+    /// <summary>
+    /// Initiator class.
+    /// </summary>
     public class Inflator : IOasis
     {
         public IFromComponent CreateFromComponent(Dictionary<string, string> headers)

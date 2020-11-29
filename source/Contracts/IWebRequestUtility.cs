@@ -9,6 +9,14 @@ using System.Runtime.CompilerServices;
 
 namespace Kyameru.Component.Ftp.Contracts
 {
+    /// <summary>
+    /// Web request facility.
+    /// </summary>
+    /// <remarks>
+    /// Primarily for unit tests to enable mocking.
+    /// There is the possibility of creating an ftp server as part of the test
+    /// but need to get this into beta asap.
+    /// </remarks>
     public interface IWebRequestUtility
     {
         /// <summary>

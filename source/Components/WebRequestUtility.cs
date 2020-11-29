@@ -8,10 +8,19 @@ using System.Net;
 
 namespace Kyameru.Component.Ftp.Components
 {
+    /// <summary>
+	/// Web request facility.
+	/// </summary>
     internal class WebRequestUtility : IWebRequestUtility
     {
+        /// <summary>
+        /// Logging event.
+        /// </summary>
         public event EventHandler<string> OnLog;
 
+        /// <summary>
+        /// Dictionary for ftp operations.
+        /// </summary>
         private readonly Dictionary<FtpOperation, string> ftpClientOperation = new Dictionary<FtpOperation, string>()
         {
             { FtpOperation.List, WebRequestMethods.Ftp.ListDirectory},
@@ -20,12 +29,24 @@ namespace Kyameru.Component.Ftp.Components
             { FtpOperation.Upload, WebRequestMethods.Ftp.UploadFile }
         };
 
+        /// <summary>
+        /// Deletes a file from the endpoint.
+        /// </summary>
+        /// <param name="settings">Ftp Settings.</param>
+        /// <param name="fileName">Name of file to updload.</param>
+        /// <param name="closeConnection">Value indicating whether the connection sould be closed.</param>
         public void DeleteFile(FtpSettings settings, string fileName, bool closeConnection = true)
         {
             FtpWebRequest request = this.GetFtpWebRequest($"{settings.Path}/{fileName}", FtpOperation.Delete, settings, closeConnection);
             request.GetResponse();
         }
 
+        /// <summary>
+        /// Downloads a file.
+        /// </summary>
+        /// <param name="fileName">Filename of the file to download.</param>
+        /// <param name="settings">Ftp settings.</param>
+        /// <returns>Returns a byte array of the file.</returns>
         public byte[] DownloadFile(string fileName, FtpSettings settings)
         {
             byte[] file = null;
@@ -40,6 +61,11 @@ namespace Kyameru.Component.Ftp.Components
             return file;
         }
 
+        /// <summary>
+        /// Gets the directory listing from the endpoint.
+        /// </summary>
+        /// <param name="settings">Ftp Settinfs.</param>
+        /// <returns>Returns a list of files and directories.</returns>
         public List<string> GetDirectoryContents(FtpSettings settings)
         {
             List<string> response = new List<string>();
@@ -62,6 +88,12 @@ namespace Kyameru.Component.Ftp.Components
             return response;
         }
 
+        /// <summary>
+        /// Uploads a file.
+        /// </summary>
+        /// <param name="file">File byte array.</param>
+        /// <param name="settings">Ftp settings.</param>
+        /// <param name="fileName">Name of file to upload.</param>
         public void UploadFile(byte[] file, FtpSettings settings, string fileName)
         {
             FtpWebRequest request = this.GetFtpWebRequest($"{settings.Path}/{fileName}", FtpOperation.Upload, settings, true);
@@ -86,6 +118,10 @@ namespace Kyameru.Component.Ftp.Components
             return response;
         }
 
+        /// <summary>
+        /// Raises a log message.
+        /// </summary>
+        /// <param name="message"></param>
         private void RaiseLog(string message)
         {
             this.OnLog?.Invoke(this, message);

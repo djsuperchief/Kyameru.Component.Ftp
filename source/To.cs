@@ -10,13 +10,36 @@ using System.Text;
 
 namespace Kyameru.Component.Ftp
 {
+    /// <summary>
+    /// To component.
+    /// </summary>
     public class To : IToComponent
     {
+        /// <summary>
+        /// Ftp settings.
+        /// </summary>
         private readonly FtpSettings ftpSettings;
+
+        /// <summary>
+        /// Ftp client.
+        /// </summary>
         private readonly FtpClient ftpClient;
+
+        /// <summary>
+        /// Archive path.
+        /// </summary>
         private readonly string archivePath;
+
+        /// <summary>
+        /// Source path.
+        /// </summary>
         private readonly string source;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="To"/> class.
+        /// </summary>
+        /// <param name="headers">Valid headers.</param>
+        /// <param name="webRequestUtility">Web request utility.</param>
         public To(Dictionary<string, string> headers, IWebRequestUtility webRequestUtility)
         {
             Dictionary<string, string> config = headers.ToToConfig();
@@ -49,6 +72,10 @@ namespace Kyameru.Component.Ftp
             }
         }
 
+        /// <summary>
+        /// Archives the outgoing file.
+        /// </summary>
+        /// <param name="item">Message to process.</param>
         private void ArchiveFile(Routable item)
         {
             if ((this.source == "File" || string.IsNullOrWhiteSpace(this.source)) && !string.IsNullOrWhiteSpace(this.archivePath))
@@ -61,6 +88,11 @@ namespace Kyameru.Component.Ftp
             }
         }
 
+        /// <summary>
+        /// Gets the fully qualified path for archiving.
+        /// </summary>
+        /// <param name="originalPath">Original path for outgoing file.</param>
+        /// <returns>Returns the fully qualified path for archive.</returns>
         private string GetPath(string originalPath)
         {
             string response = string.Empty;
@@ -76,6 +108,10 @@ namespace Kyameru.Component.Ftp
             return response;
         }
 
+        /// <summary>
+        /// Ensures a directory exists.
+        /// </summary>
+        /// <param name="path">Path to check.</param>
         private void EnsureDirectoryExists(string path)
         {
             DirectoryInfo directoryInfo = new DirectoryInfo(System.IO.Directory.GetParent(path).FullName);
@@ -85,6 +121,11 @@ namespace Kyameru.Component.Ftp
             }
         }
 
+        /// <summary>
+        /// Gets the source to upload.
+        /// </summary>
+        /// <param name="item">Message to process.</param>
+        /// <returns>Returns a byte array of the file.</returns>
         private byte[] GetSource(Routable item)
         {
             byte[] response = null;
@@ -100,11 +141,24 @@ namespace Kyameru.Component.Ftp
             return response;
         }
 
+        /// <summary>
+        /// Gets a log entity for logging.
+        /// </summary>
+        /// <param name="message">Message to log.</param>
+        /// <param name="logLevel">Level of logging.</param>
+        /// <param name="ex">Exception to log.</param>
+        /// <returns>Returns an instance of the <see cref="Log"/> class.</returns>
         private Log RaiseLog(string message, LogLevel logLevel, Exception ex = null)
         {
             return new Log(logLevel, message, ex);
         }
 
+        /// <summary>
+        /// Gets an error entity for tracing.
+        /// </summary>
+        /// <param name="action">Current action.</param>
+        /// <param name="message">Error message.</param>
+        /// <returns>Returns an instance of the <see cref="Error"/> class.</returns>
         private Error GetError(string action, string message)
         {
             return new Error("ToFtp", action, message);
