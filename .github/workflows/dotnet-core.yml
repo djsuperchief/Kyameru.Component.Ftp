@@ -18,8 +18,8 @@ jobs:
       with:
         dotnet-version: 3.1.301
     - name: Install dependencies
-      run: dotnet restore build/Kyameru.Component.Slack.sln
+      run: dotnet restore build/Kyameru.Component.Ftp.sln
     - name: Build
-      run: dotnet build build/Kyameru.Component.Slack.sln --configuration Release --no-restore
+      run: dotnet build build/Kyameru.Component.Ftp.sln --configuration Release --no-restore
     - name: Test
-      run: dotnet test tests/UnitTests/Kyameru.Component.Slack.Tests/Kyameru.Component.Slack.Tests.csproj --no-restore --verbosity normal
+      run: dotnet test tests/Kyameru.Component.Ftp.Tests/Kyameru.Component.Ftp.Tests.csproj --no-restore --verbosity normal
