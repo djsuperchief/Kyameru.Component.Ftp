@@ -22,4 +22,4 @@ jobs:
     - name: Build
       run: dotnet build build/Kyameru.Component.Ftp.sln --configuration Release --no-restore
     - name: Test
-      run: dotnet test tests/Kyameru.Component.Ftp.Tests/Kyameru.Component.Ftp.Tests.csproj --no-restore --verbosity normal
+      run: dotnet test tests/UnitTests/Kyameru.Component.Ftp.Tests/Kyameru.Component.Ftp.Tests.csproj --no-restore --verbosity normal
