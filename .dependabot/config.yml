@@ -1,0 +1,9 @@
+
+version: 1
+update_configs:
+  # Keep package.json (& lockfiles) secure and up-to-date,
+  # batching pull requests daily
+  - package_manager: "dotnet:nuget"
+    directory: "/source"
+    update_schedule: "daily"
+    target_branch: "dependabot"
