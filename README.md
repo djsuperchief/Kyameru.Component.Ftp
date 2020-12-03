@@ -6,6 +6,9 @@
 ![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/Kyameru.Component.Ftp)
 
 The Ftp component provides a very simple poller, downloader and uploader for Ftp files. It currently can only pull from a single specified directory.
+*Works With*
+* Kyameru Core (https://github.com/djsuperchief/Kyameru)
+* Kyameru File Component (https://github.com/djsuperchief/Kyameru.Component.File)
 
 ## From
 Header | Description | Optional | Default
